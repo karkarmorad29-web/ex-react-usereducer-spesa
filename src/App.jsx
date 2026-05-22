@@ -14,11 +14,23 @@ function App() {
   ];
 
   const [addedProducts, setAddedProducts] = useState([]);
-  console.log(addedProducts);
+
+  const upAdateProductQuantity = (name, quantity) => {
+    setAddedProducts(curr => curr.map(p => {
+      if (p.name === name) {
+        return { ...p, quantity }
+
+      }
+      return p;
+    }))
+
+  }
+
 
   const addToCart = product => {
-    const isProdottoInserito = addedProducts.some(p => p.name === product.name);
-    if (isProdottoInserito) {
+    const alreadyAddedProduct = addedProducts.find(p => p.name === product.name);
+    if (alreadyAddedProduct) {
+      upAdateProductQuantity(alreadyAddedProduct.name, alreadyAddedProduct.quantity + 1);
       return;
     }
     setAddedProducts(curr => [...curr, {
