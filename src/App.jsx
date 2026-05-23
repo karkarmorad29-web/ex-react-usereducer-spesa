@@ -16,6 +16,9 @@ function App() {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const upAdateProductQuantity = (name, quantity) => {
+    if (quantity < 1 || isNaN(quantity)) {
+      return;
+    }
     setAddedProducts(curr => curr.map(p => {
       if (p.name === name) {
         return { ...p, quantity }
@@ -61,7 +64,12 @@ function App() {
         <ul>
           {addedProducts.map((p, i) =>
             <li key={i}>
-              <p>{p.quantity} x {p.name} ({p.price.toFixed(2)}€)</p>
+              <p>
+                <input type="number" value={p.quantity} onChange={
+                  e => upAdateProductQuantity(p.name, parseInt(e.target.value))
+                } />
+                <span>{p.quantity} x {p.name} ({p.price.toFixed(2)}€)</span>
+              </p>
               <button onClick={() => removeFromCart(p)}>Rimuovi dal carrello</button>
             </li>
           )}
