@@ -39,6 +39,12 @@ function App() {
     }]);
   }
 
+  const removeFromCart = product => {
+    setAddedProducts(curr => curr.filter(p => p.name !== product.name));
+  }
+
+  const totalToPay = addedProducts.reduce((acc, p) => acc + (p.price * p.quantity), 0);
+
   return (
     <>
       <h1>Lista Prodotti</h1>
@@ -56,9 +62,11 @@ function App() {
           {addedProducts.map((p, i) =>
             <li key={i}>
               <p>{p.quantity} x {p.name} ({p.price.toFixed(2)}€)</p>
+              <button onClick={() => removeFromCart(p)}>Rimuovi dal carrello</button>
             </li>
           )}
         </ul>
+        <h3>Totale da pagare: {totalToPay.toFixed(2)}€</h3>
       </>)}
     </>
   )
