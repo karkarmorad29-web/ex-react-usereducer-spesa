@@ -1,8 +1,44 @@
-import { useState } from 'react'
+import { useReducer } from 'react'
 //import reactLogo from './assets/react.svg'
 //import viteLogo from './assets/vite.svg'
 //import heroImg from './assets/hero.png'
 //import './App.css'
+
+function cartReducer(addedProducts, action) {
+  switch (action.type) {
+    case 'ADD_ITEM':
+      // Logica per aggiungere un prodotto
+      const addedProduct = addedProducts.find(p => p.name === action.payload.name);
+      if (addedProduct) {
+        action.payload.quantity = addedProduct.quantity + 1;
+        return addedProducts;
+      } else {
+        return [...addedProducts, {
+          ...action.payload,
+          quantity: 1
+        }];
+      }
+
+    case 'UPDATE_QUANTITY':
+      // Logica per aggiornare la quantità
+
+      if (action.payload.quantity < 1 || isNaN(action.payload.quantity)) {
+        return addedProducts;
+      }
+      return addedProducts.map(p => p.name === action.payload.name ?
+        { ...p, quantity: action.payload.quantity } : p);
+
+    case 'REMOVE_ITEM':
+      // Logica per rimuovere un prodotto
+      return addedProducts.filter(p => p.name !== action.payload);
+    default:
+      return addedProducts;
+
+
+  }
+}
+
+
 
 function App() {
 
@@ -13,39 +49,7 @@ function App() {
     { name: 'Pasta', price: 0.7 },
   ];
 
-  const [addedProducts, setAddedProducts] = useState([]);
-
-  const upAdateProductQuantity = (name, quantity) => {
-    if (quantity < 1 || isNaN(quantity)) {
-      return;
-    }
-    setAddedProducts(curr => curr.map(p => {
-      if (p.name === name) {
-        return { ...p, quantity }
-
-      }
-      return p;
-    }))
-
-  }
-
-
-  const addToCart = product => {
-    const alreadyAddedProduct = addedProducts.find(p => p.name === product.name);
-    if (alreadyAddedProduct) {
-      upAdateProductQuantity(alreadyAddedProduct.name, alreadyAddedProduct.quantity + 1);
-      return;
-    }
-    setAddedProducts(curr => [...curr, {
-      ...product,
-      quantity: 1
-    }]);
-  }
-
-  const removeFromCart = product => {
-    setAddedProducts(curr => curr.filter(p => p.name !== product.name));
-  }
-
+  const [addedProducts, dispatchCart] = useReducer(cartReducer, []);
   const totalToPay = addedProducts.reduce((acc, p) => acc + (p.price * p.quantity), 0);
 
   return (
@@ -55,7 +59,9 @@ function App() {
         {products.map((p, i) => (
           <li key={i}>
             <p>{p.name} ({p.price.toFixed(2)}€)</p>
-            <button onClick={() => addToCart(p)}>Aggiungi al carrello</button>
+            <button onClick={() =>
+              dispatchCart({ type: 'ADD_ITEM', payload: p })
+            }>Aggiungi al carrello</button>
           </li>
         ))}
       </ul>
@@ -66,11 +72,13 @@ function App() {
             <li key={i}>
               <p>
                 <input type="number" value={p.quantity} onChange={
-                  e => upAdateProductQuantity(p.name, parseInt(e.target.value))
+                  e => dispatchCart({
+                    type: 'UPDATE_QUANTITY', payload: { name: p.name, quantity: parseInt(e.target.value, 10) }
+                  })
                 } />
                 <span>{p.quantity} x {p.name} ({p.price.toFixed(2)}€)</span>
               </p>
-              <button onClick={() => removeFromCart(p)}>Rimuovi dal carrello</button>
+              <button onClick={() => dispatchCart({ type: 'REMOVE_ITEM', payload: p.name })}>Rimuovi dal carrello</button>
             </li>
           )}
         </ul>
